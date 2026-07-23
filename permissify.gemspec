@@ -12,6 +12,7 @@ Gem::Specification.new do |spec|
     facts and permissions registered at boot, and returns a structured Decision.
     The core depends only on the Ruby standard library; Rails and Predicate are
     optional adapters loaded when their host constants are available.
+    API docs (RDoc): https://kuickr.co/stocklive/permissify-rdocs
   DESC
   spec.homepage    = "https://github.com/StockLive-Group/permissify"
   spec.license     = "MIT"
@@ -23,6 +24,7 @@ Gem::Specification.new do |spec|
   spec.metadata = {
     "homepage_uri"          => spec.homepage,
     "source_code_uri"       => spec.homepage,
+    "documentation_uri"     => "https://kuickr.co/stocklive/permissify-rdocs",
     "rubygems_mfa_required" => "true"
   }
 end
