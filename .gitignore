@@ -4,3 +4,7 @@
 *.gem
 Gemfile.lock
 .DS_Store
+
+# Generated API docs — published to kuickr, never committed
+/doc/
+/.yardoc/

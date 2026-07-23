@@ -35,10 +35,23 @@ module Permissify
       @registry = Registry.new
     end
 
+    # Register a resource's facts, permissions, and action aliases. The block is
+    # evaluated by the DSL; see Permissify::DSL for the available declarations.
     def define(resource_key, &block)
       registry.define(resource_key, &block)
     end
 
+    # Evaluate one authorization question and return an immutable Decision.
+    #
+    # +actor+::        the subject performing the action
+    # +action+::       the verb, resolved to a permission via an action alias
+    # +resource+::     the object under test
+    # +resource_key+:: selects the registered definition
+    # +environment+::  optional request/tenant context facts may read
+    # +fact_source+::  optional external FactSource for facts not registered inline
+    #
+    # Unknown resource/action/permission/fact and any evaluation error all DENY,
+    # each with a distinct Decision#reason. Never returns a bare boolean or nil.
     def decide(actor:, action:, resource:, resource_key:, environment: {}, fact_source: FactSource::Null.new)
       resource_def = registry.resource(resource_key)
       return deny(:unknown_resource, nil, resource_key: resource_key) unless resource_def

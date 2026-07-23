@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- `EXAMPLES.md` — comprehensive, test-backed examples for every feature.
+- RDoc comments across the public API and an `rdoc` Rake task; generated API docs
+  build into `doc/` (gitignored) and are published to kuickr, not committed.
+
 ### 0.2.0 — authorized scopes + fact-source parity
 
 - `scope(:permission) { |actor, relation, environment| … }` DSL registration.
