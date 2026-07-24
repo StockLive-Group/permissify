@@ -350,8 +350,24 @@ fresh).
 
 ## 13. Rails integration
 
-The core needs no framework. `require "permissify/rails"` adds an optional controller
-concern — it imposes no runtime dependency and adds nothing to the core.
+The core needs no framework. In a Rails app, adding the gem is enough — a Railtie loads
+automatically (only when Rails is present, so pure-Ruby hosts stay stdlib-only) and gives
+you **zero-config** wiring:
+
+- Drop resource definitions in `app/permissify/*.rb` (each calls `Permissify.define`). The
+  Railtie ignores that directory in Zeitwerk and registers the files on boot and on every
+  reload — **no initializer, no loader glue**.
+- `Permissify::Controller` is required for you; just include it.
+
+```ruby
+# app/permissify/contact.rb  — registered automatically, no initializer needed
+Permissify.define(:contact) do
+  fact(:assessor) { |ctx| ctx.actor.assessor? }
+  permission(:viewable) { |ctx| ctx.all?(:assessor) }
+  action :index, maps_to: :viewable
+  scope(:viewable) { |actor, relation, _env| relation.where(user: actor) }
+end
+```
 
 ```ruby
 class ApplicationController < ActionController::Base

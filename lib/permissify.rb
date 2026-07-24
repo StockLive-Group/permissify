@@ -123,3 +123,7 @@ module Permissify
     end
   end
 end
+
+# Optional, zero-config Rails integration. Only loads when Rails is already
+# present, so the core keeps its stdlib-only footprint in pure-Ruby hosts.
+require_relative "permissify/railtie" if defined?(Rails::Railtie)

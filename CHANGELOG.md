@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### 0.5.0 — zero-config Rails Railtie
+
+- `Permissify::Railtie` — loaded automatically when Rails is present (a conditional
+  require in `lib/permissify.rb`, so pure-Ruby hosts keep their stdlib-only footprint).
+  It removes all host loader glue:
+  - definitions live in `app/permissify/*.rb` (each calls `Permissify.define`);
+  - the directory is ignored by Zeitwerk (files register, they don't define constants);
+  - definitions register on boot and re-register on every reload via `to_prepare`;
+  - `permissify/rails` (the controller concern) is required automatically.
+  No initializer is needed. Mirrors the Predicate gem's Railtie so both load identically.
+
 ### 0.4.0 — optional Predicate fact source
 
 - `require "permissify/predicate"` → `Permissify::PredicateFactSource` — sources a
