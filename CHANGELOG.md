@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### 0.3.0 — optional Rails adapter
+
+- `require "permissify/rails"` + `include Permissify::Controller` — an optional,
+  dependency-free controller concern:
+  - `permissify_authorize(resource, action:, resource_key:, environment:)` — raises
+    `NotAuthorized` on deny, returns the resource on allow.
+  - `permissify_scope(relation, …)` — delegates to `authorized_scope` (DB-level).
+  - `verify_permissify_authorized` / `verify_permissify_scoped` — after_action guards
+    that fail loud when an action forgot to authorize or scope.
+  - `permissify_actor` (defaults to `current_user`) and `permissify_environment` are
+    overridable; `permissify_resource_key` infers the registry key from the model name.
+  - Names are distinct from Pundit's so both can run side by side during a shadow migration.
+- Adapter tests run without booting Rails (a fake controller supplies the contract).
+
 - `EXAMPLES.md` — comprehensive, test-backed examples for every feature.
 - RDoc comments across the public API and an `rdoc` Rake task; generated API docs
   build into `doc/` (gitignored) and are published to kuickr, not committed.

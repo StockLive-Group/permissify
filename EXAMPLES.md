@@ -28,6 +28,7 @@ framework.
 
 11. [Migrating a Pundit policy](#11-migrating-a-pundit-policy)
 12. [Optional Predicate as a domain-fact source](#12-optional-predicate-as-a-domain-fact-source)
+13. [Rails integration](#13-rails-integration)
 
 ---
 
@@ -343,3 +344,46 @@ end
 Predicate is an *optional* domain layer beneath authorization — never a required
 dependency, and never the store for volatile authz facts (those stay plain Ruby, and
 fresh).
+
+---
+
+## 13. Rails integration
+
+The core needs no framework. `require "permissify/rails"` adds an optional controller
+concern — it imposes no runtime dependency and adds nothing to the core.
+
+```ruby
+class ApplicationController < ActionController::Base
+  include Permissify::Controller
+  verify_permissify_authorized          # fail loud if an action forgot to authorize
+  rescue_from Permissify::NotAuthorized, with: :forbidden
+
+  private
+
+  def forbidden = head(:forbidden)
+end
+
+class ContactsController < ApplicationController
+  def show
+    @contact = permissify_authorize(Contact.find(params[:id]))   # raises on deny
+  end
+
+  def index
+    @contacts = permissify_scope(Contact.all)                    # DB-level narrowing
+  end
+end
+```
+
+- `permissify_authorize(resource, action:, resource_key:, environment:)` — returns the
+  resource on allow (so it wraps an assignment), raises `NotAuthorized` on deny. `action`
+  defaults to the controller `action_name`; `resource_key` is inferred from the model name
+  (`Contact` → `:contact`, `LivestockType` → `:livestock_type`) unless given.
+- `permissify_scope(relation, …)` — delegates to `authorized_scope`; raises `NoScope` when
+  the resource has no registered scope.
+- `verify_permissify_authorized` / `verify_permissify_scoped` — after_action guards so a
+  forgotten authorization fails loud instead of passing open.
+- Override `permissify_actor` (defaults to `current_user`) and `permissify_environment`
+  (defaults to `{}`) to change the subject or supply tenant/request context.
+
+The method names are deliberately distinct from Pundit's (`authorize`, `policy_scope`,
+`verify_authorized`) so both can run side by side during a shadow migration.
