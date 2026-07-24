@@ -29,6 +29,7 @@ framework.
 11. [Migrating a Pundit policy](#11-migrating-a-pundit-policy)
 12. [Optional Predicate as a domain-fact source](#12-optional-predicate-as-a-domain-fact-source)
 13. [Rails integration](#13-rails-integration)
+14. [Sourcing many domain facts — `PredicateFactSource`](#14-sourcing-many-domain-facts--predicatefactsource)
 
 ---
 
@@ -387,3 +388,40 @@ end
 
 The method names are deliberately distinct from Pundit's (`authorize`, `policy_scope`,
 `verify_authorized`) so both can run side by side during a shadow migration.
+
+---
+
+## 14. Sourcing many domain facts — `PredicateFactSource`
+
+Section 12 reads a single Predicate result inline. When several **stable domain facts**
+come from one Predicate entity, `require "permissify/predicate"` and wire them through the
+`FactSource` port instead of writing a block per fact.
+
+```ruby
+source = Permissify::PredicateFactSource.new(
+  entity: Predicate.for(:article),        # responds to call(name, state) -> boolean
+  facts:  [:content_complete, :media_ready],
+  state:  ->(ctx) { { title: ctx.resource.title, body: ctx.resource.body,
+                      media_ids: ctx.resource.media_ids } }
+)
+
+Permissify.define(:article) do
+  fact(:owner) { |ctx| ctx.resource.user_id == ctx.actor.id }   # volatile → inline, fresh
+  permission(:publishable) { |ctx| ctx.all?(:owner, :content_complete) }
+  action :publish, maps_to: :publishable
+end
+
+Permissify.decide(actor: user, action: :publish, resource: article,
+                  resource_key: :article, fact_source: source)
+```
+
+- `facts:` declares exactly which names this source owns; any other name returns `Missing`,
+  so inline facts (like `:owner`) and other sources still win.
+- An owned fact whose Predicate entity raises denies observably with `:fact_error` — never a
+  silent allow. A fact neither inline nor owned denies with `:missing_fact`.
+- The entity is injected, so there is **no load-time dependency** on the `predicate` gem;
+  the adapter is testable with a stub and degrades safely when Predicate isn't wired.
+
+**Use it only for stable facts.** Predicate always memoizes, so volatile authorization facts
+(roles, ownership) must stay inline and fresh — Predicate is a domain layer *beneath*
+authorization, never a store for authz state.

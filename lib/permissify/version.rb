@@ -2,5 +2,5 @@
 
 module Permissify
   # The gem version (semantic versioning).
-  VERSION = "0.3.0"
+  VERSION = "0.4.0"
 end

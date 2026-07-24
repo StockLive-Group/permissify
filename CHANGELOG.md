@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### 0.4.0 — optional Predicate fact source
+
+- `require "permissify/predicate"` → `Permissify::PredicateFactSource` — sources a
+  family of stable domain-validity facts from a Predicate entity through the
+  `FactSource` port, with no load-time dependency on the `predicate` gem (the entity
+  is injected). `facts:` declares the owned names; anything else returns `Missing` so
+  inline facts and other sources still win; an owned fact whose entity raises denies
+  observably with `:fact_error`.
+- Documents the split loudly: Predicate is a memoized *domain* layer beneath
+  authorization — for stable facts only, never for volatile roles/ownership.
+- Contract tests run with and without Predicate (a faithful `call(name, state)` stub),
+  including sourced-vs-inline parity.
+
 ### 0.3.0 — optional Rails adapter
 
 - `require "permissify/rails"` + `include Permissify::Controller` — an optional,
